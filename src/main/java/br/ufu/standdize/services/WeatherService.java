@@ -16,6 +16,7 @@ import java.net.http.HttpRequest;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.Date;
 
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -26,7 +27,7 @@ public class WeatherService implements SyncService {
     @Value("${weather.key}")
     String key;
 
-    @Value("${weather.city}")
+    @Value("${city}")
     String city;
 
     private final WeatherRepository weatherRepository;
@@ -36,8 +37,8 @@ public class WeatherService implements SyncService {
         WeatherAPIResponse response = callApi();
 
         weatherRepository.save(Weather.builder()
-            .date(OffsetDateTime.now())
-            .lastUpdate(OffsetDateTime.ofInstant(response.getCurrent().getLastUpdate().toInstant(), ZoneId.systemDefault()))
+            .date(new Date())
+            .lastUpdate(new Date(OffsetDateTime.ofInstant(response.getCurrent().getLastUpdate().toInstant(), ZoneId.systemDefault()).toInstant().toEpochMilli()))
             .condition(response.getCurrent().getCondition().getText())
             .conditionIcon(response.getCurrent().getCondition().getIcon())
             .conditionCode(response.getCurrent().getCondition().getCode())

@@ -1,22 +1,15 @@
 package br.ufu.standdize.model;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.OffsetDateTime;
-
 @Document(collection = "weather")
-@Builder(toBuilder = true)
-public class Weather {
+@SuperBuilder(toBuilder = true)
+public class Weather extends AbstractEntity {
  
     @Id
     private String id;
-
-    // Date
-    private OffsetDateTime date;
-    private OffsetDateTime lastUpdate;
 
     // Weather
     private String condition;
@@ -29,10 +22,5 @@ public class Weather {
     private Float pressureIn;
     private Integer humidity;
     private Integer cloud;
-
-    // Location
-    private String city;
-    private String region;
-    private String country;
 
 }
