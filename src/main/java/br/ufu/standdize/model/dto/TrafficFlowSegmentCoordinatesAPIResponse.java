@@ -15,6 +15,6 @@ import java.util.List;
 public class TrafficFlowSegmentCoordinatesAPIResponse {
 
     @JsonProperty("coordinate")
-    private List<TrafficFlowSegmentCoordinatesItemAPIResponse> items;
+    private List<TrafficFlowSegmentCoordinate> items;
 
 }

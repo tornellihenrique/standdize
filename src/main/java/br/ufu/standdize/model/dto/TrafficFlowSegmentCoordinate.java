@@ -6,13 +6,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TrafficFlowSegmentCoordinatesItemAPIResponse {
+public class TrafficFlowSegmentCoordinate {
 
     @JsonProperty("latitude")
     private Double latitude;

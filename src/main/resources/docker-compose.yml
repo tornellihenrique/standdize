@@ -1,0 +1,13 @@
+version: "3.8"
+services:
+  standdize-db:
+    image: mongo
+    container_name: standdize-db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: 0cII9e!b4Sknrqy*qCVO
+    volumes:
+      - /Users/henriquetornelli/mongodb/database:/data/db
+    ports:
+      - 27017:27017
+    restart: unless-stopped
