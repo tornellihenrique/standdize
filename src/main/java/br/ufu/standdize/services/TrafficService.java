@@ -2,12 +2,11 @@ package br.ufu.standdize.services;
 
 import br.ufu.standdize.model.TrafficFlow;
 import br.ufu.standdize.model.TrafficFlowSegment;
+import br.ufu.standdize.model.TrafficIncident;
 import br.ufu.standdize.model.Weather;
 import br.ufu.standdize.model.dto.GeocodeResultAPIResponse;
 import br.ufu.standdize.model.dto.GeocodeResultTypeAPIResponse;
-import br.ufu.standdize.repository.TrafficFlowRepository;
-import br.ufu.standdize.repository.TrafficFlowSegmentAddressRepository;
-import br.ufu.standdize.repository.TrafficFlowSegmentRepository;
+import br.ufu.standdize.repository.*;
 import br.ufu.standdize.util.MapsService;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -24,10 +23,7 @@ import java.io.InputStream;
 import java.io.SequenceInputStream;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,11 +33,17 @@ public class TrafficService implements SyncService {
     @Value("${city}")
     String city;
 
-    @Value("${traffic.zoom}")
-    Integer zoom;
+    @Value("${traffic.flow.zoom}")
+    Integer zoomFlow;
 
-    @Value("${traffic.range}")
-    Integer range;
+    @Value("${traffic.flow.range}")
+    Integer rangeFlow;
+
+    @Value("${traffic.incidents.zoom}")
+    Integer zoomIncidents;
+
+    @Value("${traffic.incidents.range}")
+    Integer rangeIncidents;
 
     private final TrafficFlowRepository trafficFlowRepository;
 
@@ -49,19 +51,24 @@ public class TrafficService implements SyncService {
 
     private final TrafficFlowSegmentRepository trafficFlowSegmentRepository;
 
+    private final TrafficIncidentAddressRepository trafficIncidentAddressRepository;
+
+    private final TrafficIncidentRepository trafficIncidentRepository;
+
     private final MapsService mapsService;
 
     @Override
     public void sync() throws Exception {
-        val geocode = mapsService.getGeocode(city, GeocodeResultTypeAPIResponse.Geography);
+        val geocode = mapsService.getGeocode(city, GeocodeResultTypeAPIResponse.GEOGRAPHY);
 
         syncTrafficFlow(geocode);
         syncTrafficFlowSegment(geocode);
+        syncTrafficIncidents(geocode);
     }
 
     @Transactional
     public void syncTrafficFlow(GeocodeResultAPIResponse geocode) throws IOException, InterruptedException {
-        List<String> tiles = mapsService.getTrafficFlowTiles(geocode, zoom, range).stream().map(t -> {
+        List<String> tiles = mapsService.getTrafficFlowTiles(geocode, zoomFlow, rangeFlow).stream().map(t -> {
             try {
                 return Base64.getEncoder().encodeToString(IOUtils.toByteArray(t));
             } catch (IOException e) {
@@ -80,16 +87,16 @@ public class TrafficService implements SyncService {
     }
 
     @Transactional
-    public void syncTrafficFlowSegment(GeocodeResultAPIResponse geocode) throws IOException, InterruptedException {
-        val AddressList = trafficFlowSegmentAddressRepository.findByActiveTrue();
+    public void syncTrafficFlowSegment(GeocodeResultAPIResponse geocode) {
+        val addressList = trafficFlowSegmentAddressRepository.findByActiveTrue();
 
-        AddressList.stream().forEach(a -> {
+        val entities = addressList.stream().map(a -> {
             try {
-                val addressGeocode = mapsService.getGeocode(a.getAddress() + " " + city, GeocodeResultTypeAPIResponse.Street);
+                val addressGeocode = mapsService.getGeocode(a.getAddress() + " " + city);
 
                 val data = mapsService.getTrafficFlowSegmentData(addressGeocode);
 
-                trafficFlowSegmentRepository.save(TrafficFlowSegment.builder()
+                return TrafficFlowSegment.builder()
                     .date(new Date())
                     .lastUpdate(new Date())
                     .address(a.getAddress())
@@ -102,10 +109,44 @@ public class TrafficService implements SyncService {
                     .city(geocode.getAddress().getMunicipality())
                     .region(geocode.getAddress().getCountrySubdivision())
                     .country(geocode.getAddress().getCountry())
-                    .build());
+                    .build();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-        });
+        }).toList();
+
+        trafficFlowSegmentRepository.saveAll(entities);
+    }
+
+    @Transactional
+    public void syncTrafficIncidents(GeocodeResultAPIResponse geocode) {
+        val addressList = trafficIncidentAddressRepository.findByActiveTrue();
+
+        val entities = addressList.stream().map(a -> {
+            try {
+                val addressGeocode = mapsService.getGeocode(a.getAddress() + " " + city);
+
+                val data = mapsService.getTrafficIncidents(addressGeocode, zoomIncidents, rangeIncidents);
+
+                return data.stream().map(d -> TrafficIncident.builder()
+                        .date(new Date())
+                        .lastUpdate(new Date())
+                        .address(a.getAddress())
+                        .externalId(d.getProperties().getId())
+                        .type(d.getType())
+                        .iconCategory(d.getProperties().getIconCategory())
+                        .magnitudeOfDelay(d.getProperties().getMagnitudeOfDelay())
+                        .geometryType(d.getGeometry().getType())
+                        .coordinates(d.getGeometry().getCoordinates())
+                        .city(geocode.getAddress().getMunicipality())
+                        .region(geocode.getAddress().getCountrySubdivision())
+                        .country(geocode.getAddress().getCountry())
+                        .build()).toList();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }).flatMap(Collection::stream).toList();
+
+        trafficIncidentRepository.saveAll(entities);
     }
 }
