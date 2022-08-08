@@ -1,6 +1,12 @@
 package br.ufu.standdize.util;
 
-import br.ufu.standdize.model.dto.*;
+import br.ufu.standdize.model.dto.api.geocode.GeocodeAPIResponse;
+import br.ufu.standdize.model.dto.api.geocode.GeocodeResultAPIResponse;
+import br.ufu.standdize.model.dto.api.geocode.GeocodeResultTypeAPIResponse;
+import br.ufu.standdize.model.dto.api.traffic.TrafficFlowAPIResponse;
+import br.ufu.standdize.model.dto.api.traffic.TrafficFlowSegmentAPIResponse;
+import br.ufu.standdize.model.dto.api.traffic.TrafficIncidentAPIResponse;
+import br.ufu.standdize.model.dto.api.traffic.TrafficIncidentItemAPIResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

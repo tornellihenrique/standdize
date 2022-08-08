@@ -1,10 +1,17 @@
 package br.ufu.standdize.services;
 
+import br.ufu.standdize.model.Sync;
 import br.ufu.standdize.model.Weather;
-import br.ufu.standdize.model.dto.WeatherAPIResponse;
+import br.ufu.standdize.model.dto.api.weather.WeatherAPIResponse;
+import br.ufu.standdize.model.dto.response.ServiceResponse;
+import br.ufu.standdize.repository.SyncRepository;
 import br.ufu.standdize.repository.WeatherRepository;
 import br.ufu.standdize.util.JsonBodyHandler;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -15,8 +22,16 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.Date;
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@SuperBuilder
+class WeatherResponse extends ServiceResponse {
+    List<ServiceResponse> weather;
+}
 
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -31,6 +46,8 @@ public class WeatherService implements SyncService {
     String city;
 
     private final WeatherRepository weatherRepository;
+
+    private final SyncRepository syncRepository;
 
     @Override
     public void sync() throws Exception {
@@ -53,6 +70,42 @@ public class WeatherService implements SyncService {
             .region(response.getLocation().getRegion())
             .country(response.getLocation().getCountry())
             .build());
+    }
+
+    @Override
+    public String getId() {
+        return "weather";
+    }
+
+    @Override
+    public ServiceResponse getOverview() {
+        Sync sync = syncRepository.findFirstByTypeOrderByDateDesc(getClass().getName());
+
+        return ServiceResponse.builder()
+                .id(getId())
+                .name("Clima")
+                .description("Informações sobre clima")
+                .date(sync != null ? sync.getDate() : null)
+                .lastUpdate(sync != null ? sync.getDate() : null)
+                .build();
+    }
+
+    @Override
+    public ServiceResponse getDetails() {
+        ServiceResponse overview = getOverview();
+
+        return WeatherResponse.builder()
+                .id(overview.getId())
+                .name(overview.getName())
+                .description(overview.getDescription())
+                .date(overview.getDate())
+                .lastUpdate(overview.getLastUpdate())
+                .weather(weatherRepository.findTop100ByOrderByDateDesc().stream().map(Weather::toResponse).toList())
+                .build();
+    }
+
+    public WeatherAPIResponse getCurrentWeather() throws IOException, InterruptedException {
+        return callApi();
     }
 
     private WeatherAPIResponse callApi() throws IOException, InterruptedException {

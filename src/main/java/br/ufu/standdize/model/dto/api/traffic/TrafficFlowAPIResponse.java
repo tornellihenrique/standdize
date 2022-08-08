@@ -1,4 +1,4 @@
-package br.ufu.standdize.model.dto;
+package br.ufu.standdize.model.dto.api.traffic;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -6,15 +6,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class GeocodeAPIResponse {
+public class TrafficFlowAPIResponse {
 
-    @JsonProperty("results")
-    private List<GeocodeResultAPIResponse> results;
+    @JsonProperty("flowSegmentData")
+    private TrafficFlowSegmentAPIResponse flowSegment;
 
 }

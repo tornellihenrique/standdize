@@ -1,30 +1,35 @@
 package br.ufu.standdize.services;
 
+import br.ufu.standdize.model.Sync;
 import br.ufu.standdize.model.TrafficFlow;
 import br.ufu.standdize.model.TrafficFlowSegment;
 import br.ufu.standdize.model.TrafficIncident;
-import br.ufu.standdize.model.Weather;
-import br.ufu.standdize.model.dto.GeocodeResultAPIResponse;
-import br.ufu.standdize.model.dto.GeocodeResultTypeAPIResponse;
+import br.ufu.standdize.model.dto.api.geocode.GeocodeResultAPIResponse;
+import br.ufu.standdize.model.dto.api.geocode.GeocodeResultTypeAPIResponse;
+import br.ufu.standdize.model.dto.response.ServiceResponse;
 import br.ufu.standdize.repository.*;
 import br.ufu.standdize.util.MapsService;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.SequenceInputStream;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@SuperBuilder
+class TrafficResponse extends ServiceResponse {
+    List<ServiceResponse> trafficFlows;
+    List<ServiceResponse> trafficFlowSegments;
+    List<ServiceResponse> trafficIncidents;
+}
 
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -57,6 +62,8 @@ public class TrafficService implements SyncService {
 
     private final MapsService mapsService;
 
+    private final SyncRepository syncRepository;
+
     @Override
     public void sync() throws Exception {
         val geocode = mapsService.getGeocode(city, GeocodeResultTypeAPIResponse.GEOGRAPHY);
@@ -64,6 +71,40 @@ public class TrafficService implements SyncService {
         syncTrafficFlow(geocode);
         syncTrafficFlowSegment(geocode);
         syncTrafficIncidents(geocode);
+    }
+
+    @Override
+    public String getId() {
+        return "traffic";
+    }
+
+    @Override
+    public ServiceResponse getOverview() {
+        Sync sync = syncRepository.findFirstByTypeOrderByDateDesc(getClass().getName());
+
+        return ServiceResponse.builder()
+                .id(getId())
+                .name("Trânsito")
+                .description("Informações sobre trânsito")
+                .date(sync != null ? sync.getDate() : null)
+                .lastUpdate(sync != null ? sync.getDate() : null)
+                .build();
+    }
+
+    @Override
+    public ServiceResponse getDetails() {
+        ServiceResponse overview = getOverview();
+
+        return TrafficResponse.builder()
+                .id(overview.getId())
+                .name(overview.getName())
+                .description(overview.getDescription())
+                .date(overview.getDate())
+                .lastUpdate(overview.getLastUpdate())
+                .trafficFlows(trafficFlowRepository.findTop100ByOrderByDateDesc().stream().map(TrafficFlow::toResponse).toList())
+                .trafficFlowSegments(trafficFlowSegmentRepository.findTop100ByOrderByDateDesc().stream().map(TrafficFlowSegment::toResponse).toList())
+                .trafficIncidents(trafficIncidentRepository.findTop100ByOrderByDateDesc().stream().map(TrafficIncident::toResponse).toList())
+                .build();
     }
 
     @Transactional

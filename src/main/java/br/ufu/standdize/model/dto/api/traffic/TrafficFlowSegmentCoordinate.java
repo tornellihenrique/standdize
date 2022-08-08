@@ -1,4 +1,4 @@
-package br.ufu.standdize.model.dto;
+package br.ufu.standdize.model.dto.api.traffic;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

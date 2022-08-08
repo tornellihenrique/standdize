@@ -1,4 +1,4 @@
-package br.ufu.standdize.model.dto;
+package br.ufu.standdize.model.dto.api.weather;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

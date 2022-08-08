@@ -1,4 +1,4 @@
-package br.ufu.standdize.model.dto;
+package br.ufu.standdize.model.dto.api.traffic;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,9 +12,12 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TrafficFlowSegmentCoordinatesAPIResponse {
+public class TrafficIncidentGeometryAPIResponse {
 
-    @JsonProperty("coordinate")
-    private List<TrafficFlowSegmentCoordinate> items;
+    @JsonProperty("type")
+    private String type;
+
+    @JsonProperty("coordinates")
+    private List<List<Double>> coordinates;
 
 }

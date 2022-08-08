@@ -1,6 +1,7 @@
 package br.ufu.standdize.task;
 
 import br.ufu.standdize.model.Sync;
+import br.ufu.standdize.model.dto.response.ServiceResponse;
 import br.ufu.standdize.repository.SyncRepository;
 import br.ufu.standdize.services.SyncService;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +22,7 @@ public class SyncScheduler {
     @Autowired
     private SyncRepository syncRepository;
 
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(fixedRateString = "${sync-rate}")
     public void run() {
         serviceList.forEach(s -> {
             Sync sync = Sync.builder()

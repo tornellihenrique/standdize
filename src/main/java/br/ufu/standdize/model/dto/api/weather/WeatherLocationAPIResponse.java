@@ -1,4 +1,4 @@
-package br.ufu.standdize.model.dto;
+package br.ufu.standdize.model.dto.api.weather;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,18 +10,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class GeocodeResultAddressAPIResponse {
+public class WeatherLocationAPIResponse {
+    @JsonProperty("name")
+    private String name;
 
-    @JsonProperty("municipality")
-    private String municipality;
-
-    @JsonProperty("countrySubdivision")
-    private String countrySubdivision;
-
-    @JsonProperty("countryCode")
-    private String countryCode;
+    @JsonProperty("region")
+    private String region;
 
     @JsonProperty("country")
     private String country;
-
 }

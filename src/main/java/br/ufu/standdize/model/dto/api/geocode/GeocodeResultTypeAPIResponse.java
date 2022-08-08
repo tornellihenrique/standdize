@@ -1,4 +1,4 @@
-package br.ufu.standdize.model.dto;
+package br.ufu.standdize.model.dto.api.geocode;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

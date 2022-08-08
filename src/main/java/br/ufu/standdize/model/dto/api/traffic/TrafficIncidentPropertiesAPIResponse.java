@@ -1,4 +1,4 @@
-package br.ufu.standdize.model.dto;
+package br.ufu.standdize.model.dto.api.traffic;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -6,19 +6,19 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.OffsetDateTime;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class WeatherCurrentConditionAPIResponse {
-    @JsonProperty("text")
-    private String text;
+public class TrafficIncidentPropertiesAPIResponse {
 
-    @JsonProperty("icon")
-    private String icon;
+    @JsonProperty("id")
+    private String id;
 
-    @JsonProperty("code")
-    private Integer code;
+    @JsonProperty("iconCategory")
+    private Integer iconCategory;
+
+    @JsonProperty("magnitudeOfDelay")
+    private Integer magnitudeOfDelay;
+
 }

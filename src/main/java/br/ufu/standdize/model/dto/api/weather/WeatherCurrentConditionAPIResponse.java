@@ -1,4 +1,4 @@
-package br.ufu.standdize.model.dto;
+package br.ufu.standdize.model.dto.api.weather;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -6,16 +6,19 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.OffsetDateTime;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class GeocodeResultPositionAPIResponse {
+public class WeatherCurrentConditionAPIResponse {
+    @JsonProperty("text")
+    private String text;
 
-    @JsonProperty("lat")
-    private Double lat;
+    @JsonProperty("icon")
+    private String icon;
 
-    @JsonProperty("lon")
-    private Double lon;
-
+    @JsonProperty("code")
+    private Integer code;
 }
